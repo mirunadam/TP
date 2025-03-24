@@ -1,0 +1,102 @@
+#include <stdio.h>
+#include <string.h>
+#include <stdlib.h>
+#include <time.h>
+
+#define ARTIST 256
+#define SONG 256
+
+struct rock_songs {
+    char artist[ARTIST];
+    char song[SONG];
+    unsigned int year;
+};
+
+void bubble_sort_by_artist(struct rock_songs arr[], int n) {
+    int i, j;
+    for (i = 0; i < n-1; i++) {
+        for (j = 0; j < n-i-1; j++) {
+            if (strcmp(arr[j].artist, arr[j+1].artist) > 0) {
+                struct rock_songs temp = arr[j];
+                arr[j] = arr[j+1];
+                arr[j+1] = temp;
+            }
+        }
+    }
+}
+
+int comparing_artist(const void *a, const void *b) { //function to sort the array of struct rock elements by artist name.
+    struct rock_songs *rockA = (struct rock_songs *)a;
+    struct rock_songs *rockB = (struct rock_ *)b;
+    return strcmp(rockA->artist, rockB->artist);
+}
+
+int main(int argc, char *argv[]) {
+    if(argc != 3) {
+        fprintf(stdin, "Usage: %s <file-path> <year>\n", argv[0]);//check if the correct number of arguments  are given
+        exit(EXIT_FAILURE);
+    }
+
+    FILE *file = fopen(argv[1], "r");
+    if(file == NULL) {
+        perror("Error opening file");
+        exit(EXIT_FAILURE);
+    }
+
+    struct rock Rock[10];
+    char line[1024];
+    int count = 0; //counter to keep track of the number of songs read
+    unsigned int targetYear = atoi(argv[2]);   //extracts the file path and target year from the command-line
+
+    while(fgets(line, sizeof(line), file) != NULL && count < 10) {  
+        // // Read and process each line from the file
+        char *token = strtok(line, ",");
+        if(token != NULL){  //extracts song name, artist, and release year from the tokens and stores this information into the songs array.
+            strncpy(Rock[count].artist, token, ARTIST - 1);
+        }
+
+        token = strtok(NULL, ",");
+        if(token != NULL){
+            strncpy(Rock[count].song, token, SONG - 1);
+        }
+
+        token = strtok(NULL, ",");
+        if(token != NULL){
+            Rock[count].year = atoi(token);
+        }
+
+        if(Rock[count].year == targetYear){
+            count++;
+        }
+    }
+
+    fclose(file);
+
+    if(count == 0) {
+        printf("No songs found from %u\n", targetYear);
+    }else{
+        clock_t start, end; //data type used to store processor time. These variables will be used to measure the start and end times of sorting.
+        double cpu_time_used;
+
+        start = clock();//Records the current processor time into the variable start. This marks the starting point of the sorting process.
+        bubble_sort_by_artist(Rock, count); // Calls the function bubble_sort_by_artist to sort the Rock array by artist name.
+        end = clock();  //Records the current processor time into the variable end. This marks the end point of the sorting process.
+        cpu_time_used = ((double) (end - start)) / CLOCKS_PER_SEC;
+        printf("Bubble Sort Execution time: %f seconds\n", cpu_time_used);
+
+        start = clock();
+        qsort(Rock, count, sizeof(struct rock_songs), comparing_artist);
+        end = clock();
+        cpu_time_used = ((double) (end - start)) / CLOCKS_PER_SEC;
+        printf("qsort Execution time: %f seconds\n", cpu_time_used);
+        //compare the execution times of two sorting algorithms
+        //it prints out these times for comparison.
+
+        for(int i = 0; i < count; ++i) {
+            printf("%s - %s (%d)\n", Rock[i].artist, Rock[i].song, Rock[i].year);
+            // Check if the song was released in the target year
+            // If so, print its name and artist
+        }
+    }
+    return 0;
+}

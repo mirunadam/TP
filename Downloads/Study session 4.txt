@@ -1,0 +1,232 @@
+//  (10 points) Implement a function that reads from standard input data organized as CSV (comma-separated
+// values) and for each line prints how many of the ”fields¸consist only of alphanumerical characters (as given
+// by isalnum()). Note: input is arbitrary long.
+
+#include<stdio.h>
+#include<ctype.h>
+#include<stdbool.h>
+
+int return_fields()
+{
+    int result = 0;
+    char current_char;
+    bool check = true;
+    
+    while((current_char = getchar()) != EOF)
+    {
+        if(current_char == ','){
+            
+            if(check){
+                
+                result ++;
+            }
+            check = true;
+        }
+        else if(!isalnum(current_char) && check){
+            
+            check = false;
+        }
+    }
+    if(check){
+        result ++;
+    }
+    return result;
+}
+
+int main ()
+{
+    printf("%d", return_fields());
+    return 0;
+}
+
+
+
+
+
+//  (10 points) Implement a function that checks if all nibbles of an unsigned (given as parameter) symmetrical to the middle
+// of the number are identical. Use bitwise operators.
+// I.e.: f(0x6ADDA60)=1, f(0x243342A)=0.
+
+#include<stdio.h>
+#include<stdbool.h>
+#define DEBUG 0
+
+int check_for_symetry(unsigned example_number)
+{
+    bool check = true;
+    for(int i = 0; i < sizeof(example_number) * 8 / 2; i += 4){
+        
+        unsigned left_nibble = (example_number >> (sizeof(example_number) * 8 - i - 4)) &0xF;
+        unsigned right_nibble = (example_number >> i) & 0xF;
+#if DEBUG
+printf("%x %x\n",left_nibble,right_nibble);
+printf("%d\n", sizeof(example_number) * 8);
+#endif
+        if(left_nibble != right_nibble){
+            printf("0");
+            return 0;
+        }
+    }
+    printf("1");
+    return 0;
+}
+
+int main ()
+{
+    unsigned example_number = 0x243342A;
+    check_for_symetry(example_number);
+    return 0;
+}
+
+
+
+
+
+// . (10 points) Write a function that prints in lexicographical order of the URLs all the links from an HTML file named on the
+// command line. An HTML link is of the form <a href="google.com">Click</a> the URL portion is the one enclosed in
+// quotes. URLs are at most 100 chars long, but arbitrarily many.
+// I.e.: a possible input is <a href="www.upt.ro">Click1</a> <a href="acsa.upt.ro">Click2</a> which would print
+// acsa.upt.ro www.upt.ro
+
+//schelet - structura
+
+
+
+#include<stdio.h>
+#include<string.h>
+#include<stdlib.h>
+#define CHAR_BUFF 100
+struct link{
+    char url[CHAR_BUFF + 1];
+    int lenght;
+};
+
+void print_lexicographically(){
+    
+    qsort(example_url, line_count, sizeof(struct link *), sort_lexicographically);
+    
+    for(int i = 0; i < line_count ; i ++){
+        
+        printf("%s\n", example_url[i]);
+    }
+}
+
+int sort_lexicographically(const void *a, const void *b){
+    struct link *link_1 = (struct link *)a;
+    struct link *link_2 = (struct link *)b;
+    
+    return strcmp(link_1 -> url , link_2 -> url);
+}
+
+int main (int argc, char *argv[]){
+    
+    if(argc != 2){
+        
+        perror("Too few arguments");
+        exit(EXIT_FAILURE);
+    } 
+    
+    FILE *file = fopen(argv[1], "r");
+    
+    if(file == NULL){
+        
+        perror("Error while opening the file");
+        exit(EXIT_FAILURE);
+    }
+    
+    int max_size = 50;
+    int realloc_increment = 50;
+    
+    struct link example_url = (struct link *)malloc(max_size * sizeof(struct link *));
+    
+    if(example_url == NULL){
+        perror("ERROR ...");
+        exit(EXIT_FAILURE);
+    }
+    int line_count = 0;
+    while(fgets(example_url, CHAR_BUFF, file)){
+        line_count ++;
+        if(line_count == max_size){
+            max_size += realloc_increment;
+            struct link example_url = (struct link *)realloc(example_url, max_size * sizeof(struct link *));
+            
+            if(example_url == NULL){
+                perror("ERROR...");
+                exit(EXIT_FAILURE);
+            }
+        }
+    }
+    print_lexicographically();
+    free(example_url);
+    fclose(file);
+    return 0;
+}
+
+
+
+
+// . (10 points) Implement a function that takes an array of floats with its number of elements, a character buffer-array with
+// its capacity and builds into the buffer-array a string consisting of all the numbers separated by semicolon, without exceeding
+// the capacity (copy as much as possible).
+
+#include<stdio.h>
+#include<string.h>
+#include<stdlib.h>
+#define BUFF_ARR 100
+
+char *array_to_string(double *example_array[BUFF_ARR], int capacity)
+{
+    int max_size = 50;
+    int realloc_increment = 50;
+    int count_char = 0;
+    char *result = (char *)malloc(max_size * sizeof(char *));
+    
+    if(result == NULL){
+        perror("Error when allocation memory");
+        exit(EXIT_FAILURE);
+    }
+    
+    char sepparator = ';';
+    for(int i = 0; i < capacity; i ++){
+        if(count_char == max_size || count_char + 1 == max_size){
+            
+            max_size += realloc_increment;
+            result = (char *)realloc(result, max_size * sizeof(char *));
+            
+            if(result == NULL){
+                perror("Error when reallocation memory");
+                exit(EXIT_FAILURE);
+             }
+        }
+        strcat(result, example_array[i]);
+        count_char += strlen(example_array[i]);
+        
+        if(i != capacity - 1){
+            
+            strcat(result, &sepparator);
+            count_char ++;
+        }
+    }
+    return result;
+}
+
+int main ()
+{
+    double array_of_floats[BUFF_ARR]; // 2.5243 5.236 634.26235 634.6246 -> 2.5243;5.236;634.26235;634.6246 // declare your array
+    int capacity = 200;//declare your capacity
+    char *result = array_to_string(array_of_floats, capacity);
+    printf("%s\n",result);
+    free(result);
+    return 0;
+}
+
+
+
+
+
+
+
+
+
+
+

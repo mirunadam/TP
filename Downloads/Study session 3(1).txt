@@ -1,0 +1,242 @@
+// ) Write a program that prints in order of the numerical values all the registration plates belonging to cars registred
+// in a particular county, from a list found in a file with it’s path read from standard input.
+// Consider the common Romanian registration plate of the format: County-Number-Id (I.e. TM-01-ABC) (the Number part
+// might be represented on two or three digits). Break ties by the lexicographical values of the Id.
+
+
+//Normalize all the values to
+// uppercase. Skip all the records which don’t match the pattern.
+
+#include<stdio.h>
+#include<stdlib.h>
+#include<string.h>
+
+struct registration_plate{
+    char county[3];
+    char number[4];
+    char id[4];
+};
+
+int sort_plates(const void *a, const void *b){
+    
+    struct registration_plate *first_plate = (struct registration_plate *)a;
+    struct registration_plate *second_plate = (struct registration_plate *)b;
+    
+    if(strcmp(first_plate -> number , second_plate -> number) != 0){
+        
+        if(strcmp(first_plate -> number , second_plate -> number) > 0){
+            
+            return 1;
+        }
+        else return -1;
+    }
+    else return strcmp(first_plate -> id , second_plate -> id);
+    
+}
+
+int main (int argc, char **argv)
+{
+    char *particular_county = "MH";
+    
+    FILE *file = fopen(argv[1], "r");//!!!!!!!!!!!!!!!!!!
+    
+    if(file == NULL){
+        
+        perror("ERROR ENCONTERED WHILE OPENING THE FILE");
+        exit(EXIT_FAILURE);
+    }
+    
+    int realloc_increment = 50;
+    int maximum_lines = 50;
+    
+    struct registration_plate *example_plate = (struct registration_plate *)malloc(maximum_lines * sizeof(struct registration_plate *));
+    
+    if(example_plate == NULL){
+        
+        perror("ERROR ENCOUNTERED DURIN' DYNAMIC ALLOCATION");
+        exit(EXIT_FAILURE);
+    }
+    
+    int count_lines = 0;
+    
+    while(fscanf(file, "%s-%s-%s", example_plate[count_lines].county, example_plate[count_lines].number, example_plate[count_lines].id) == 3)
+    {
+        count_lines ++;
+        if(count_lines == maximum_lines)
+        {
+            maximum_lines += realloc_increment;
+            
+            //free(example_plate);
+            
+            example_plate = (struct registration_plate *)realloc(example_plate, maximum_lines * sizeof(struct registration_plate *));
+            
+            if(example_plate == NULL){
+                
+                perror("ERROR ENCOUNTERED DURING DYNAMIC REALLOCATION");
+                exit(EXIT_FAILURE);
+            }
+        }
+    }
+    
+    qsort(example_plate, count_lines, sizeof(struct registration_plate *), sort_plates);
+    
+    for(int i = 0; i < count_lines ; i ++){
+        
+        if(strcmp(particular_county , example_plate[i].county) == 0){
+            
+            printf("%s-%s-%s\n", example_plate[i].county, example_plate[i].number, example_plate[i].id);
+        }
+    }
+    
+    free(example_plate);//!!!!!!!!!!
+    fclose(file);//!!!
+    
+    return 0;
+}
+
+
+
+
+
+
+
+
+
+
+/*
+
+struct registration_plate{
+    char county[3];
+    char number[4];
+    char id[4];
+};
+
+struct registration_plate current_plate[100];
+current_plate[i].id
+
+*/
+///////////////////////////////////////////////////////////////////////
+
+
+// Row B. Sorting text Design a data structure that stores a line of text, together with its length (in characters) and number of words.
+//  Read all lines of a file named on the command line into an array of such structures. Sort and print the file with lines in increasing order of length,
+//  breaking ties first in decreasing order of words and then in alphabetical order. You may consider at most 200 lines of maximum 200 characters each.
+
+#include<stdio.h>
+#include<string.h>
+#include<stdlib.h>
+#include<ctype.h>
+#include<stdbool.h>
+#define MAX_LINES_BUFF 200
+#define MAX_CHAR_BUFF 200
+#define DEBUG 0
+
+struct line{
+    char text[MAX_CHAR_BUFF];
+    int lenght;
+    int word_count;
+};
+
+int count_words(const char *str){
+    bool check_for_word = false;
+    int result = 0;
+    
+    for(int i = 0; i < strlen(str); i ++){
+        
+        if(isspace(str[i]) && check == true){
+            
+            result ++;
+            check_for_word = false;
+        }
+        else if(isalnum(str[i])){
+            
+            check_for_word = true;
+        }
+    }
+    
+    if(check_for_word){
+        
+        result ++;
+    }
+    return result;
+}
+
+int sort_lines(const void *a, const void *b){
+    
+    struct line *first_line = (struct line *)a;
+    struct line *second_line = (struct line *)b;
+    
+    if(first_line -> lenght != second_line -> lenght){
+        
+        if(first_line -> lenght > second_line -> lenght){
+            
+            return -1;
+        }
+        else return 1;
+    }
+    else if(first_line -> word_count != second_line -> word_count){
+        
+        if(first_line -> word_count > second_line -> word_count){
+            
+            return 1;
+        }
+        else return -1;
+    }
+    
+    int minimum_lenght;
+    
+    if(strlen(first_line -> text) > strlen(second_line -> text)){
+        
+        minimum_lenght = strlen(second_line -> text);
+    }
+    else minimum_lenght = strlen(first_line -> text);
+    
+   for(int i = 0 ; i < minimum_lenght; i ++){
+       
+       if(first_line.text[i] > second_line.text[i]){
+           
+           return 1;
+       }
+       else return -1;
+   }
+}
+
+int main (int argc, char *argv[])
+{
+#if DEBUG
+char *example_string = "la la la la la da";
+printf("%d\n", count_words(example_string));
+#endif
+    FILE *file = fopen(argv[1], "r");
+    
+    if(file == NULL){
+        
+        perror("Error encontered while openin' the file");
+        exit(EXIT_FAILURE);
+    }
+    
+    struct line example_line[MAX_LINES_BUFF];
+    int line_count = 0;
+    
+    while(fgets(example_line[line_count].text, MAX_CHAR_BUFF, file) != NULL){
+        
+        example_line[line_count].lenght = strlen(example_line[line_count].text);
+        example_line[line_count].word_count = count_words(example_line[line_count].text);
+        line_count ++;
+    }
+    
+    qsort(example_line, line_count, sizeof(struct line), sort_lines);
+    
+    for(int i = 0 ; i < line_count ; i++){
+        
+        printf("%s\n", example_line[i].text);
+    }
+    fclose(file);
+    return 0;
+}
+
+
+
+
+
+

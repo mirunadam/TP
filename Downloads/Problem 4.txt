@@ -1,0 +1,63 @@
+// implement a c program that reads from a file(with the path given as command line argument) a list of up to 100 key valye pairs written as
+// key = value, one per line and prints in ascending lexicographical order all the values ordered by you breaking tties by value
+
+#include<stdio.h>
+#include<stdlib.h>
+#include<string.h>
+#define KEY_BUFF 100
+#define PAIR_BUFF 100
+
+struct PAIR{
+    char key[KEY_BUFF];
+    int value;
+};
+
+int sort_key_value(const void *a, const void *b){
+    const struct PAIR *first_pair = (const struct PAIR *)a;
+    const struct PAIR *second_pair = (const struct PAIR *)b;
+    
+    if(strcmp(first_pair -> key, second_pair -> key) != 0){
+        
+        return strcmp(first_pair -> key, second_pair -> key);
+    }
+    
+    return first_pair -> value - second_pair -> value;
+}
+
+
+int main(int argc, char **argv){
+    
+    if(argc != 2){
+        
+        fprintf(stderr, "Usage: ./program <file_path>");
+        exit(EXIT_FAILURE);
+    }
+    
+    FILE *file = fopen(argv[1], "r");
+    
+    if(file == NULL){
+        perror("Error encountered when opening the file");
+        exit(EXIT_FAILURE);
+    }
+    
+    int line_count = 0;
+    struct PAIR pairs[PAIR_BUFF];
+    
+    while(fscanf(file, "%99[^=]=%d", pairs[line_count].key, &pairs[line_count].value) == 2){
+        line_count ++;
+    }
+    
+    qsort(pairs, line_count, sizeof(struct PAIR ), sort_key_value);
+    
+    for(int i = 0; i < line_count; i ++){
+        printf("%s %d\n", pairs[i].key, pairs[i].value);
+    }
+    
+    if(fclose(file) != 0){
+        
+        perror("Error encountered while closing the file");
+        exit(EXIT_FAILURE);
+    }
+    
+    return 0;
+}

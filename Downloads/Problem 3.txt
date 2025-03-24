@@ -1,0 +1,83 @@
+// implement a slimmed down version of sprintf function that recieves an array of integers, its number of elements and a string having some %d format
+// specifiers and returs a c string with the format specifiers replaced by consecutive values from the array. Replace as many specifiers as
+// possible(considering the integer array might not have the same number of elements as the number of %ds from the string).
+// Example: Anna has %d apples and %d oranges and the array of elements having 12 and 14 you shall return the string Anna has 12 apples and 14 oranges
+
+#include<stdio.h>
+#include<string.h>
+#include<stdlib.h>
+#define ARRAY_SIZE 2
+
+char *integer_to_string(int current_number){
+    int copy = current_number;
+    int length = 0;
+    
+    while(copy){
+        copy /= 10;
+        length ++;
+    }
+    char *str = malloc(length + 1);
+    
+    if (str == NULL){
+        perror("Error when allocating memory to convert integer to string");
+        exit(EXIT_FAILURE);
+    }
+    str[length] = '\0';
+    while(length){
+        length --;
+        str[length] = (current_number % 10) + '0';
+        current_number /= 10;
+        
+    }
+    return str;
+}
+
+char *format_string(char *example_string, int *example_array, int array_size){
+
+    int index_count = 0;
+    char *result_string = malloc(1);
+    if(result_string == NULL){
+        
+        perror("Error encountered when allocating memory");
+        exit(EXIT_FAILURE);
+    }
+    result_string[0] = '\0';
+    
+    while (*example_string){
+        
+        if(*example_string == '%' && *(example_string + 1) =='d' && index_count < array_size){
+                
+            char *converted_string = integer_to_string(example_array[index_count]);
+            result_string = realloc(result_string, strlen(result_string) + strlen(converted_string) + 1);
+                    
+            if(result_string == NULL){
+                
+                perror("Error encountered when allocating memory");
+                exit(EXIT_FAILURE);
+            }
+            strcat(result_string, converted_string);
+            free(converted_string);
+            index_count ++;
+            example_string += 2;
+        }
+        
+        else{
+            int length = strlen(result_string);
+            result_string = realloc(result_string, length + 2);
+            result_string[length] = *example_string;
+            *example_string ++;
+            result_string[length + 1] = '\0';
+        }
+        
+    }
+    return result_string;
+}
+
+int main ()
+{
+    int example_array[ARRAY_SIZE] = {12, 14};
+    char *example_string = "Anna has %d apples and %d oranges%d";
+    printf("%s", format_string(example_string, example_array, ARRAY_SIZE));
+    
+    return 0;
+}

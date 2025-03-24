@@ -1,0 +1,137 @@
+#include<stdio.h>
+#include<stdlib.h>
+#include<string.h>
+#include<stdbool.h>
+
+struct numeric_counter{
+    
+    int hours;
+    int minutes;
+    float seconds;
+};
+
+
+void time_shift(char *first_timing, char *second_timing, float seconds_to_shift, FILE *output_file){
+    
+    struct numeric_counter first_count, second_count;
+
+    sscanf(first_timing, "%d:%d:%f", &first_count.hours, &first_count.minutes, &first_count.seconds);
+    sscanf(second_timing,"%d:%d:%f", &second_count.hours, &second_count.minutes, &second_count.seconds);
+
+    first_count.seconds += seconds_to_shift;
+    second_count.seconds += seconds_to_shift;
+
+   while (first_count.seconds >= 60.0) {
+       
+        first_count.minutes++;
+        first_count.seconds -= 60.0;
+    }
+    
+    while (first_count.minutes >= 60) {
+        
+        first_count.hours++;
+        first_count.minutes -= 60;
+    }
+    
+    while (second_count.seconds >= 60.0) {
+        
+        second_count.minutes++;
+        second_count.seconds -= 60.0;
+    }
+    
+    while (second_count.minutes >= 60) {
+        
+        second_count.hours++;
+        second_count.minutes -= 60;
+    }
+
+    sprintf(first_timing, "%02d:%02d:%06.3f", first_count.hours, first_count.minutes, first_count.seconds);
+    sprintf(second_timing, "%02d:%02d:%06.3f", second_count.hours, second_count.minutes, second_count.seconds);
+
+    fprintf(output_file, "%s --> %s\n", first_timing, second_timing);
+}
+
+
+void remove_text_formatting(char *str, FILE *output_file) {
+    
+    char text[1000] = "";
+    int index = 0; 
+    bool check_tag = false;
+
+    for (int i = 0; str[i] != '\0'; ++i) {
+        
+        if (str[i] == '<') {
+
+            check_tag = true;
+        }
+        
+        else if (str[i] == '>') {
+            
+            check_tag = false;
+        }
+        
+        else if (!check_tag) {
+            
+            index ++;
+            text[index] = str[i];
+        }
+    }
+
+    text[j] = '\0';
+
+    fprintf(output_file, "%s", text);
+}
+
+
+
+int main (int argc, char *argv[]){
+    
+    if(argc != 3){
+        
+        perror("Usage: ./program <file_name> <number_of_seconds>\n");
+        return 1;
+    }
+
+    float seconds_to_shift = atof(argv[2]);
+    
+    FILE *input_file = fopen(argv[1], "r");
+    
+    if (input_file == NULL){
+        
+        perror("Error opening the file\n");
+        return 1;
+    }
+
+    FILE *output_file = fopen("output_file.srt", "w");
+    char current_line[1000]; // assuming a line is at most 1000 characters long
+
+    while(fgets(current_line, sizeof(current_line), input_file)){
+        
+        if(strstr(current_line, "-->")){
+            
+            char first_timing[20];
+            char second_timing[20];
+            
+            sscanf(current_line, "%s --> %s", first_timing, second_timing);
+            
+            time_shift(first_timing, second_timing, seconds_to_shift, output_file);
+        }
+        
+        else {
+            
+            remove_text_formatting(current_line, output_file);
+        }
+    }
+
+    if(fclose(input_file) != 0){
+        
+        perror("Error closing the input file\n");
+    }
+
+    if(fclose(output_file) != 0){
+        
+        perror("Error closing the output file\n");
+    }
+    
+    return 0;
+}

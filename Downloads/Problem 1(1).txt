@@ -1,0 +1,94 @@
+// implement a c function that reads from imput arbitrary long text until EOF and determines for each line how many octal numbers ar on that line,
+// the maximum and the minimum. Consider octal numbers as they are written in C and consider numbers sepparated by at least one whitespace(except for 
+// the first or last number which might not have leading/trailing whitespace). Use character level I/O functions. The program should print for each 
+// line the three numbers sepparated by a single space. Results shall be printed in hexadecimal.
+
+#include<stdio.h>
+#include<ctype.h>
+#include<stdbool.h>
+
+int peek()
+{
+    char next_character = getchar();
+    ungetc(next_character, stdin);
+    return next_character;
+}
+
+int convert_to_dec()
+{
+    int result = 0;
+    char current_char;
+    while(isdigit(current_char = getchar())){
+        
+        result = result * 8 + (current_char - '0');
+    }
+    
+    ungetc(current_char, stdin);
+    
+    if(!isspace(current_char)){
+        
+        if(current_char == EOF || current_char == '\n'){
+            
+            return result;
+        }
+        return -1;
+    }
+    return result;
+}
+
+int find_octal()
+{
+    char current_character;
+    bool check_first = true;
+    int maximum = 0;
+    int minimum = 0;
+    int octal_count = 0;
+    bool valid_number = true;
+    while((current_character = getchar()) != EOF)
+    {
+        if(current_character == '\n'){
+            printf("There are %x octal numbers on this line, the maximum is %x and the minimum is %x \n", octal_count, maximum, minimum);
+            maximum = 0;
+            minimum = 0;
+            octal_count = 0;
+            check_first = true;
+        }
+        if(isspace(current_character)){
+            valid_number = true;
+        }
+        if(isalpha(current_character)){
+            valid_number = false;
+        }
+        if(current_character == '0' && isdigit(peek()) && valid_number){
+            
+            int octal_num = convert_to_dec();
+            
+            if(octal_num != -1){
+                
+                octal_count ++;
+                if(check_first){
+                    
+                    maximum = octal_num;
+                    minimum = octal_num;
+                    check_first = false;
+                }
+                if(octal_num > maximum){
+                    
+                    maximum = octal_num;
+                }
+                if(octal_num < minimum){
+                    
+                    minimum = octal_num;
+                }
+            }
+        }
+    }
+    printf("There are %x octal numbers on this line, the maximum is %x and the minimum is %x \n", octal_count, maximum, minimum);
+    return 0;
+}
+
+int main ()
+{
+    find_octal();
+    return 0;
+}

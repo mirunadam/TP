@@ -1,0 +1,10 @@
+a-ha	1985	Take On Me by a-ha	1	1	1	1
+AC/DC		Baby, Please Don't Go by AC/DC	1	0	1	0
+AC/DC	1980	Back In Black by AC/DC	1	1	97	97
+AC/DC	1993	Big Gun by AC/DC	1	1	6	6
+AC/DC		CAN'T STOP ROCK'N'ROLL by AC/DC	1	0	5	0
+AC/DC	1976	Dirty Deeds Done Dirt Cheap by AC/DC	1	1	85	85
+AC/DC	1981	For Those About To Rock by AC/DC	1	1	46	46
+AC/DC		s Got Rhythm by AC/DC	1	0	24	0
+AC/DC	1995	Hard As A Rock by AC/DC	1	1	1	1
+
